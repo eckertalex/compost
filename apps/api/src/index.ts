@@ -1,10 +1,8 @@
-import * as http from 'http'
 import {app} from './app'
 import {logger} from './config/logger'
 import {config} from './config/config'
 
-let server: http.Server
-server = app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   logger.info(`Listening to ${config.port}`)
 })
 

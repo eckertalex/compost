@@ -7,6 +7,7 @@ import httpStatus from 'http-status'
 import {config} from './config/config'
 import * as morgan from './config/morgan'
 import {errorConverter, errorHandler} from './middlewares/error'
+import {prismaClientErrorFilter} from './middlewares/prisma-client-error-filter'
 import {ApiError} from './utils/api-error'
 import {routes} from './routes/v1'
 
@@ -43,7 +44,8 @@ app.use((_res, _req, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'))
 })
 
-// convert error to ApiError, if needed
+app.use(prismaClientErrorFilter)
+
 app.use(errorConverter)
 
 // handle error

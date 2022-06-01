@@ -1,19 +1,19 @@
 import express from 'express'
-import {healthzRoute} from './healthz.route'
+import {pingRoute} from './ping.route'
 import {docsRoute} from './docs.route'
-import {todosRoute} from './todo.route'
+import {tasksRoute} from './task.route'
 import {config} from '../../config/config'
 
 const router = express.Router()
 
 const defaultRoutes = [
   {
-    path: '/healthz',
-    route: healthzRoute,
+    path: '/ping',
+    route: pingRoute,
   },
   {
-    path: '/todos',
-    route: todosRoute,
+    path: '/tasks',
+    route: tasksRoute,
   },
 ]
 

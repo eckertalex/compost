@@ -28,9 +28,9 @@
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^1.3.0",
     "eslint": "^8.15.0",
-    "eslint-config-custom": "*",
-    "scripts": "*",
-    "tsconfig": "*",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-prettier": "^4.0.0",
     "typescript": "^4.6.4",
     "vite": "^2.9.9",
     "vite-plugin-eslint": "^1.6.0"

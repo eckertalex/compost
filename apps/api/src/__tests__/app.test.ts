@@ -4,19 +4,10 @@ import {app} from '../app'
 describe('app', () => {
   it('health check returns 200', async () => {
     await supertest(app)
-      .get('/v1/healthz')
+      .get('/v1/ping')
       .expect(200)
       .then((res) => {
-        expect(res.body.ok).toBe(true)
-      })
-  })
-
-  it('healthz message endpoint says hello', async () => {
-    await supertest(app)
-      .get('/v1/healthz/message/jared')
-      .expect(200)
-      .then((res) => {
-        expect(res.body).toEqual({message: 'hello jared'})
+        expect(res.body).toEqual({message: 'pong'})
       })
   })
 })

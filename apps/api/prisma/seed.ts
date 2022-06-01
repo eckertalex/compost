@@ -2,38 +2,47 @@ import {PrismaClient, Prisma} from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const todoData: Prisma.TodoCreateInput[] = [
+const taskData: Prisma.TaskCreateInput[] = [
   {
+    completed: false,
     title: 'Implement awesome web app',
-    description: 'Use react, typescript, and chakra-ui',
+    description:
+      'Use react and chakra for frontend, and express and prisma for backend',
   },
   {
+    completed: false,
     title: 'Polish project',
-    description: 'Docs, testing, pretty ui etc.',
+    description: 'Add some nice Docs',
   },
   {
+    completed: true,
     title: 'Make a to do list',
+    description: 'Like this one',
   },
   {
+    completed: true,
     title: "Check off first thing on the 'To do' list",
+    description: 'Nice job!',
   },
   {
+    completed: true,
     title: "Realize you've already completed 2 things on the list",
-    description: "Awesome, you're the best :)",
+    description: '',
   },
   {
+    completed: true,
     title: 'Reward yourself with a nap',
-    description: 'Sleep is important',
+    description: 'zZzZzZzz',
   },
 ]
 
 async function main() {
   console.log(`Start seeding ...`)
-  for (const t of todoData) {
-    const todo = await prisma.todo.create({
+  for (const t of taskData) {
+    const task = await prisma.task.create({
       data: t,
     })
-    console.log(`Created todo with id: ${todo.id}`)
+    console.log(`Created task with uuid: ${task.uuid}`)
   }
   console.log(`Seeding finished.`)
 }

@@ -1,8 +1,8 @@
-import Joi from 'joi'
+import {NextFunction, Request, Response} from 'express'
 import httpStatus from 'http-status'
-import {NextFunction, Request, RequestHandler, Response} from 'express'
-import {pick} from '../utils/pick'
+import Joi from 'joi'
 import {ApiError} from '../utils/api-error'
+import {pick} from '../utils/pick'
 
 export type ValidateSchema = {
   body?: boolean | Joi.ObjectSchema
@@ -10,18 +10,26 @@ export type ValidateSchema = {
   query?: Joi.ObjectSchema
 }
 
-export const validate = (schema: ValidateSchema): RequestHandler => {
+function filterEmpty<Obj>(object: Obj) {
+  return Object.fromEntries(
+    Object.entries(object).filter((obj) => obj[1].length === 0)
+  )
+}
+
+// Object.entries(object).filter((obj) => obj[1].length === 0)
+export function validate(schema: ValidateSchema) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const validSchema = pick(['body', 'params', 'query'], schema)
     const validSchemaKeys = Object.keys(validSchema)
-    const reqKeys: Extract<keyof typeof req, string>[] = Object.keys(
-      req
-    ) as Extract<keyof typeof req, string>[]
-    const object = pick(
-      reqKeys.filter((value: string) => validSchemaKeys.includes(value)),
-      req
+
+    const reqKeys = Object.keys(req) as Extract<keyof typeof req, string>[]
+    const object = filterEmpty(
+      pick(
+        reqKeys.filter((value: string) => validSchemaKeys.includes(value)),
+        req
+      )
     )
-    const {value, error} = Joi.compile(validSchema)
+    const {value, error} = Joi.compile(schema)
       .prefs({errors: {label: 'key'}, abortEarly: false})
       .validate(object)
 
@@ -29,8 +37,10 @@ export const validate = (schema: ValidateSchema): RequestHandler => {
       const errorMessage = error.details
         .map((details) => details.message)
         .join(', ')
+
       return next(new ApiError(httpStatus.BAD_REQUEST, errorMessage))
     }
+
     Object.assign(req, value)
     return next()
   }

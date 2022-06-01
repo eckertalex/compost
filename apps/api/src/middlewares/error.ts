@@ -25,7 +25,11 @@ export const errorConverter: ErrorRequestHandler = (
 export const errorHandler: ErrorRequestHandler = (
   err: ApiError,
   _req: Request,
-  res: Response
+  res: Response,
+  // The error handler will not work properly if this unused arg is removed
+  // Accepting only 3 args express will not send the error but req,res,next instead
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
 ): void => {
   let {statusCode, message} = err
   if (config.env === 'production' && !err.isOperational) {

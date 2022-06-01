@@ -1,17 +1,12 @@
-import {Request, Response} from 'express'
-import {NextFunction, RequestHandler} from 'express'
+import {ParamsDictionary, Query} from 'express-serve-static-core'
+import {Request, Response, NextFunction, RequestHandler} from 'express'
 
 export const catchAsync = <
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  P = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ResBody = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ReqBody = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ReqQuery = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Locals extends Record<string, any> = Record<string, any>
+  P = ParamsDictionary,
+  ResBody = unknown,
+  ReqBody = unknown,
+  ReqQuery = Query,
+  Locals extends Record<string, unknown> = Record<string, unknown>
 >(
   fn: RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>
 ): RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> => {

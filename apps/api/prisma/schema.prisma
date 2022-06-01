@@ -10,10 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Todo {
-  id          String @id @default(uuid())
+model Task {
+  uuid        String @id @default(uuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   title       String
+  completed   Boolean @default(false)
   description String?
 }
