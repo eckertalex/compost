@@ -9,23 +9,28 @@ import {
   Divider,
   useColorModeValue,
 } from '@chakra-ui/react'
-import {Link} from 'react-router-dom'
-import {useLocalStorageValue} from '@react-hookz/web'
+import {generatePath, Link} from 'react-router-dom'
+import {useLocalStorageState} from 'ahooks'
 import {
+  ListChecks as ListChecksIcon,
   SidebarClose as SidebarCloseIcon,
   SidebarOpen as SidebarOpenIcon,
 } from 'lucide-react'
 import {navItems, bottomNavItems, NavItem, MiniNavItem} from './nav'
 import {EweIcon} from './ewe'
 import {version} from '../../package.json'
+import {useLists} from '../features/lists/use-lists'
 
 export function Sidebar() {
   const versionColor = useColorModeValue('gray.200', 'gray.700')
   const bgColorSidebar = useColorModeValue('white', 'gray.900')
-  const [isMiniMode, setMiniMode] = useLocalStorageValue(
+  const [isMiniMode, setMiniMode] = useLocalStorageState(
     '__compost_sidebar_mini_mode__',
-    false
+    {
+      defaultValue: false,
+    }
   )
+  const {data} = useLists()
 
   const sidebarToggleLabel = isMiniMode ? 'Expand' : 'Collapse'
 
@@ -62,18 +67,32 @@ export function Sidebar() {
         height="full"
       >
         <VStack spacing={4} width="full">
-          {navItems.map((item) => (
-            <Fragment key={item.to}>
-              {isMiniMode ? <MiniNavItem {...item} /> : <NavItem {...item} />}
-            </Fragment>
-          ))}
+          <VStack spacing={2} width="full">
+            {navItems.map((item) => (
+              <Fragment key={item.to}>
+                {isMiniMode ? <MiniNavItem {...item} /> : <NavItem {...item} />}
+              </Fragment>
+            ))}
+          </VStack>
+          <Divider marginY={4} />
+          <VStack spacing={2} width="full">
+            {data?.lists.map((list) => (
+              <Fragment key={list.uuid}>
+                <NavItem
+                  to={generatePath('/lists/:uuid', {uuid: list.uuid})}
+                  label={list.displayName}
+                  icon={ListChecksIcon}
+                />
+              </Fragment>
+            ))}
+          </VStack>
         </VStack>
         <VStack
           alignItems={isMiniMode ? 'center' : 'start'}
           spacing={4}
           w="full"
         >
-          <VStack spacing={4} width="full">
+          <VStack spacing={2} width="full">
             {bottomNavItems.map((item) => (
               <Fragment key={item.to}>
                 {isMiniMode ? <MiniNavItem {...item} /> : <NavItem {...item} />}

@@ -2,7 +2,10 @@ import {Button, Icon, IconButton, Tooltip} from '@chakra-ui/react'
 import {useMatch, NavLink} from 'react-router-dom'
 import {
   LucideProps,
+  CheckSquare as CheckSquareIcon,
+  Infinity as InfinityIcon,
   Home as HomeIcon,
+  Star as StarIcon,
   Settings as SettingsIcon,
 } from 'lucide-react'
 
@@ -14,9 +17,24 @@ type NavItemProps = {
 
 export const navItems: NavItemProps[] = [
   {
-    label: 'Todos',
+    label: 'Tasks',
     icon: HomeIcon,
-    to: '/',
+    to: '/tasks',
+  },
+  {
+    label: 'Important',
+    icon: StarIcon,
+    to: '/tasks/important',
+  },
+  {
+    label: 'Completed',
+    icon: InfinityIcon,
+    to: '/tasks/completed',
+  },
+  {
+    label: 'All Tasks',
+    icon: CheckSquareIcon,
+    to: '/tasks/all',
   },
 ]
 
@@ -36,6 +54,7 @@ export function NavItem(props: NavItemProps) {
     <Button
       as={NavLink}
       to={to}
+      size="sm"
       width="full"
       colorScheme="gray"
       variant={match ? 'solid' : 'ghost'}

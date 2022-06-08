@@ -8,6 +8,7 @@ import {AppRoutes} from './app-routes'
 
 export function App() {
   const mainBackgroundColor = useColorModeValue('gray.100', 'gray.800')
+
   return (
     <Suspense
       fallback={
