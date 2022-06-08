@@ -1,49 +1,101 @@
-import {PrismaClient, Prisma} from '@prisma/client'
+import {List, PrismaClient, Task} from '@prisma/client'
+import {buildList, buildTask} from '../tests/generator'
 
 const prisma = new PrismaClient()
 
-const taskData: Prisma.TaskCreateInput[] = [
+const taskOverrides: Partial<Task>[] = [
   {
-    completed: false,
     title: 'Implement awesome web app',
-    description:
+    content:
       'Use react and chakra for frontend, and express and prisma for backend',
   },
   {
-    completed: false,
     title: 'Polish project',
-    description: 'Add some nice Docs',
+    content: 'Add some nice Docs',
   },
   {
-    completed: true,
     title: 'Make a to do list',
-    description: 'Like this one',
+    content: 'Like this one',
   },
   {
-    completed: true,
     title: "Check off first thing on the 'To do' list",
-    description: 'Nice job!',
+    content: 'Nice job!',
   },
   {
-    completed: true,
     title: "Realize you've already completed 2 things on the list",
-    description: '',
+    content: '',
   },
   {
-    completed: true,
     title: 'Reward yourself with a nap',
-    description: 'zZzZzZzz',
+    content: 'zZzZzZzz',
   },
 ]
 
-async function main() {
-  console.log(`Start seeding ...`)
-  for (const t of taskData) {
-    const task = await prisma.task.create({
-      data: t,
+export const clearAllData = async () => {
+  const tasks = await prisma.task.findMany({})
+  const lists = await prisma.list.findMany({})
+
+  const deleteTask = async (uuid: string) => {
+    return await prisma.task.delete({
+      where: {uuid},
     })
-    console.log(`Created task with uuid: ${task.uuid}`)
   }
+
+  const deleteList = async (uuid: string) => {
+    return await prisma.list.delete({
+      where: {uuid},
+    })
+  }
+
+  const deleteTasks = async () => {
+    return Promise.all(tasks.map((task) => deleteTask(task.uuid)))
+  }
+
+  const deleteLists = async () => {
+    return Promise.all(lists.map((list) => deleteList(list.uuid)))
+  }
+
+  await deleteTasks()
+  await deleteLists()
+}
+
+function getDefaultList() {
+  return buildList({displayName: 'Todo App'})
+}
+
+function getTasks(listUuid: string) {
+  const tasks = []
+  for (const overrides of taskOverrides) {
+    const task = buildTask({...overrides, listUuid})
+    tasks.push(task)
+  }
+
+  for (let i = 0; i < 100; i++) {
+    const task = buildTask()
+    tasks.push(task)
+  }
+
+  return tasks
+}
+
+async function seed() {
+  const defaultList = getDefaultList()
+  const tasks = getTasks(defaultList.uuid)
+
+  await prisma.list.create({data: defaultList}).then(() => {
+    console.log(`Default list was created`)
+  })
+
+  await prisma.task.createMany({data: tasks}).then((data) => {
+    console.log(`${data.count} new tasks were created`)
+  })
+}
+
+async function main() {
+  console.log('Clearing all data ...')
+  await clearAllData()
+  console.log(`Start seeding ...`)
+  await seed()
   console.log(`Seeding finished.`)
 }
 

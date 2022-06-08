@@ -1,29 +1,86 @@
 components:
   schemas:
+    Status:
+      type: string
+      enum:
+        - NOT_STARTED
+        - IN_PROGRESS
+        - COMPLETED
+        - WAITING_ON_OTHERS
+        - DEFERRED
+
+    Importance:
+      type: string
+      enum:
+        - LOW
+        - NORMAL
+        - HIGH
+
     Task:
       type: object
       properties:
         uuid:
           type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        completed:
-          type: boolean
+          format: uuid
         title:
           type: string
-        description:
+        status:
+          schema:
+            $ref: '#/components/schemas/Status'
+        completedDateTime:
           type: string
+          format: date-time
+        importance:
+          schema:
+            $ref: '#/components/schemas/Importance'
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+        dueDateTime:
+          type: string
+          format: date-time
+        createdDateTime:
+          type: string
+          format: date-time
+        content:
+          type: string
+        listId:
+          type: string
+      required:
+        - title
       example:
         uuid: 123e4567-e89b-12d3-a456-426614174000
-        createdAt: 2022-05-29T11:39:16+00:00
-        updatedAt: 2022-05-29T11:39:16+00:00
-        completed: false
         title: task title
-        description: task description
+        status: NOT_STARTED
+        completedDateTime: 2022-05-29T11:39:16+00:00
+        importance: NORMAL
+        lastModifiedDateTime: 2022-05-29T11:39:16+00:00
+        dueDateTime: 2022-05-29T11:39:16+00:00
+        createdDateTime: 2022-05-29T11:39:16+00:00
+        content: task description
+        listId: 123e4567-e89b-12d3-a456-426614174001
+
+    List:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        createdDateTime:
+          type: string
+          format: date-time
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+      required:
+        - displayName
+      example:
+        uuid: 123e4567-e89b-12d3-a456-426614174001
+        displayName: 'Chores'
+        createdDateTime: 2022-05-29T11:39:16+00:00
+        lastModifiedDateTime: 2022-05-29T11:39:16+00:00
 
     Error:
       type: object
@@ -43,3 +100,136 @@ components:
           example:
             code: 404
             message: Not found
+
+  parameters:
+    orderByTaskParam:
+      name: orderBy
+      in: query
+      description: Determine the column to order of items to fetch
+      required: false
+      schema:
+        type: string
+        enum:
+          - title
+          - status
+          - completedDateTime
+          - importance
+          - lastModifiedDateTime
+          - dueDateTime
+          - createdDateTime
+          - content
+        default: lastModifiedDateTime
+
+    orderByListParam:
+      name: orderBy
+      in: query
+      description: Determine the column to order of items to fetch
+      required: false
+      schema:
+        type: string
+        enum:
+          - displayName
+          - createdDateTime
+          - lastModifiedDateTime
+        default: lastModifiedDateTime
+
+    sortOrderParam:
+      name: sortOrder
+      in: query
+      description: Determine the order direction of items to fetch
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: desc
+
+    skipParam:
+      name: skip
+      in: query
+      description: Skip the first n items.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+
+    takeParam:
+      name: take
+      in: query
+      description: Take ±n items from the position of the cursor.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+
+    listUuidParam:
+      name: listUuid
+      in: path
+      description: The uuid of the list
+      required: true
+      schema:
+        type: string
+
+    taskUuidParam:
+      name: taskUuid
+      in: path
+      description: The uuid of the task
+      required: true
+      schema:
+        type: string
+
+  requestBodies:
+    ListBody:
+      description: List data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              displayName:
+                type: string
+            required:
+              - displayName
+            example:
+              displayName: 'Chores'
+
+    TaskBody:
+      description: Task data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              status:
+                schema:
+                  $ref: '#/components/schemas/Status'
+              completedDateTime:
+                type: string
+                format: date-time
+              importance:
+                schema:
+                  $ref: '#/components/schemas/Importance'
+              dueDateTime:
+                type: string
+                format: date-time
+              content:
+                type: string
+              listId:
+                type: string
+            required:
+              - title
+            example:
+              title: task title
+              status: NOT_STARTED
+              completedDateTime: 2022-05-29T11:39:16+00:00
+              importance: NORMAL
+              dueDateTime: 2022-05-29T11:39:16+00:00
+              content: task description
+              listId: 123e4567-e89b-12d3-a456-426614174001

@@ -2,6 +2,7 @@ import express from 'express'
 import {pingRoute} from './ping.route'
 import {docsRoute} from './docs.route'
 import {tasksRoute} from './task.route'
+import {listsRoute} from './list.route'
 import {config} from '../../config/config'
 
 const router = express.Router()
@@ -12,7 +13,11 @@ const defaultRoutes = [
     route: pingRoute,
   },
   {
-    path: '/tasks',
+    path: '/',
+    route: listsRoute,
+  },
+  {
+    path: '/',
     route: tasksRoute,
   },
 ]

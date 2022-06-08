@@ -1,20 +1,48 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model List {
+  uuid                 String   @id @default(uuid())
+  displayName          String   @unique
+  createdDateTime      DateTime @default(now())
+  lastModifiedDateTime DateTime @updatedAt
+  tasks                Task[]
 }
 
 model Task {
-  uuid        String @id @default(uuid())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  title       String
-  completed   Boolean @default(false)
-  description String?
+  uuid                 String     @id @default(uuid())
+  title                String
+  status               Status     @default(NOT_STARTED)
+  completedDateTime    DateTime?
+  importance           Importance @default(NORMAL)
+  lastModifiedDateTime DateTime   @updatedAt
+  dueDateTime          DateTime?
+  createdDateTime      DateTime   @default(now())
+  content              String?    @db.Text
+  listUuid             String?
+  list                 List?      @relation(fields: [listUuid], references: [uuid], onDelete: Cascade)
+
+  @@index([listUuid])
+}
+
+enum Status {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  WAITING_ON_OTHERS
+  DEFERRED
+}
+
+enum Importance {
+  LOW
+  NORMAL
+  HIGH
 }

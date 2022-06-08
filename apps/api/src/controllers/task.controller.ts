@@ -1,51 +1,124 @@
-import {Prisma} from '@prisma/client'
 import httpStatus from 'http-status'
-import {ApiError} from '../utils/api-error'
 import {catchAsync} from '../utils/catch-async'
-import {db} from '../utils/db'
+import {
+  GetTasks,
+  CreateTask,
+  GetTask,
+  UpdateTask,
+  DeleteTask,
+  GetListTasks,
+} from '../validations/task.validation'
+import * as taskService from '../services/task.service'
 
-type GetTasksQuery = {
-  skip: string
-  take: string
-}
+export const getTasks = catchAsync<
+  unknown,
+  unknown,
+  unknown,
+  GetTasks['query']
+>(async (req, res): Promise<void> => {
+  const {
+    take,
+    skip,
+    orderBy = 'lastModifiedDateTime',
+    sortOrder = 'desc',
+  } = req.query
 
-export const getTasks = catchAsync<unknown, unknown, unknown, GetTasksQuery>(
+  const options = {
+    orderBy: {
+      [orderBy]: sortOrder,
+    },
+    take: take ? Number(take) : undefined,
+    skip: skip ? Number(skip) : undefined,
+  }
+
+  const result = await taskService.findMany(options)
+
+  res.json(result)
+})
+
+export const getListTasks = catchAsync<
+  GetListTasks['params'],
+  unknown,
+  unknown,
+  GetListTasks['query']
+>(async (req, res): Promise<void> => {
+  const {listUuid} = req.params
+  const {
+    take,
+    skip,
+    orderBy = 'lastModifiedDateTime',
+    sortOrder = 'desc',
+  } = req.query
+
+  const options = {
+    where: {
+      listUuid,
+    },
+    orderBy: {
+      [orderBy]: sortOrder,
+    },
+    take: take ? Number(take) : undefined,
+    skip: skip ? Number(skip) : undefined,
+  }
+
+  const result = await taskService.findMany(options)
+
+  res.json(result)
+})
+
+export const createTask = catchAsync<unknown, unknown, CreateTask['body']>(
   async (req, res): Promise<void> => {
-    const {skip, take} = req.query
+    const data = req.body
+    const task = await taskService.create({
+      data,
+    })
 
-    const options = {
-      take: take ? parseInt(take) : undefined,
-      skip: skip ? parseInt(skip) : undefined,
-    }
-
-    const tasks = await db.task.findMany({...options})
-
-    res.json({result: tasks, ...options})
+    res.status(httpStatus.CREATED).json(task)
   }
 )
 
-export const getTask = catchAsync<Prisma.TaskWhereUniqueInput>(
-  async (req, res, next): Promise<void> => {
-    const {uuid} = req.params
+export const getTask = catchAsync<GetTask['params']>(
+  async (req, res): Promise<void> => {
+    const {taskUuid} = req.params
 
-    try {
-      const task = await db.task.findUnique({
-        where: {uuid},
-      })
+    const task = await taskService.findUnique({
+      where: {
+        uuid: taskUuid,
+      },
+    })
 
-      res.json(task)
-    } catch (err) {
-      let error = err
-      if (error instanceof Error && error.name === 'NotFoundError') {
-        error = new ApiError(
-          httpStatus.NOT_FOUND,
-          'No task found',
-          true,
-          error.stack
-        )
-      }
+    res.json(task)
+  }
+)
 
-      next(error)
-    }
+export const updateTask = catchAsync<
+  UpdateTask['params'],
+  unknown,
+  UpdateTask['body']
+>(async (req, res): Promise<void> => {
+  const {taskUuid} = req.params
+  const data = req.body
+
+  const task = await taskService.updateUnique({
+    where: {
+      uuid: taskUuid,
+    },
+    data,
+  })
+
+  res.json(task)
+})
+
+export const deleteTask = catchAsync<DeleteTask['params']>(
+  async (req, res): Promise<void> => {
+    const {taskUuid} = req.params
+
+    await taskService.deleteByUuid({
+      where: {
+        uuid: taskUuid,
+      },
+    })
+
+    res.status(httpStatus.NO_CONTENT).send()
   }
 )

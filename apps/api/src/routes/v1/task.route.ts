@@ -1,17 +1,30 @@
 import express from 'express'
-import * as taskController from '../../controllers/task.controller'
-import * as taskValidation from '../../validations/task.validation'
 import {validate} from '../../middlewares/validate'
+import * as taskValidation from '../../validations/task.validation'
+import * as taskController from '../../controllers/task.controller'
 
 const router = express.Router()
 
 router
-  .route('/')
+  .route('/tasks')
+  // Get all tasks
   .get(validate(taskValidation.getTasks), taskController.getTasks)
+  // Create a task
+  .post(validate(taskValidation.createTask), taskController.createTask)
 
 router
-  .route('/:uuid')
+  .route('/tasks/:taskUuid')
+  // Get a task
   .get(validate(taskValidation.getTask), taskController.getTask)
+  // Update a task
+  .patch(validate(taskValidation.updateTask), taskController.updateTask)
+  // Delete a task
+  .delete(validate(taskValidation.deleteTask), taskController.deleteTask)
+
+router
+  .route('/lists/:listUuid/tasks')
+  // Get all tasks
+  .get(validate(taskValidation.getListTasks), taskController.getListTasks)
 
 export const tasksRoute = router
 
@@ -30,17 +43,10 @@ export const tasksRoute = router
  *     description:
  *     tags: [Tasks]
  *     parameters:
- *       - in: query
- *         name: skip
- *         schema:
- *           type: integer
- *         description: How many to skip
- *       - in: query
- *         name: take
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: How many to take
+ *       - $ref: '#/components/parameters/orderByTaskParam'
+ *       - $ref: '#/components/parameters/sortOrderParam'
+ *       - $ref: '#/components/parameters/skipParam'
+ *       - $ref: '#/components/parameters/takeParam'
  *     responses:
  *       "200":
  *         description: OK
@@ -49,7 +55,7 @@ export const tasksRoute = router
  *             schema:
  *               type: object
  *               properties:
- *                 results:
+ *                 tasks:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Task'
@@ -60,22 +66,30 @@ export const tasksRoute = router
  *                   type: integer
  *                   example: 10
  *
+ *   post:
+ *     summary: Create a task
+ *     description:
+ *     tags: [Tasks]
+ *     requestBody:
+ *       $ref: '#/components/requestBodies/TaskBody'
+ *     responses:
+ *       "201":
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Task'
  */
 
 /**
  * @swagger
- * /tasks/{uuid}:
+ * /tasks/{taskUuid}:
  *   get:
- *     summary: Get task with :uuid
+ *     summary: Get a task
  *     description:
  *     tags: [Tasks]
  *     parameters:
- *       - in: path
- *         name: uuid
- *         schema:
- *           type: string
- *         required: true
- *         description: The uuid of the task
+ *       - $ref: '#/components/parameters/taskUuidParam'
  *     responses:
  *       "200":
  *         description: OK
@@ -86,4 +100,66 @@ export const tasksRoute = router
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
+ *   patch:
+ *     summary: Update a task
+ *     description:
+ *     tags: [Tasks]
+ *     parameters:
+ *       - $ref: '#/components/parameters/taskUuidParam'
+ *     requestBody:
+ *       $ref: '#/components/requestBodies/TaskBody'
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/Task'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ *   delete:
+ *     summary: Delete a task
+ *     description:
+ *     tags: [Tasks]
+ *     parameters:
+ *       - $ref: '#/components/parameters/taskUuidParam'
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /lists/{listUuid}/tasks:
+ *   get:
+ *     summary: Get all tasks from a list
+ *     description:
+ *     tags: [Tasks]
+ *     parameters:
+ *       - $ref: '#/components/parameters/listUuidParam'
+ *       - $ref: '#/components/parameters/orderByTaskParam'
+ *       - $ref: '#/components/parameters/sortOrderParam'
+ *       - $ref: '#/components/parameters/skipParam'
+ *       - $ref: '#/components/parameters/takeParam'
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
+ *                 skip:
+ *                   type: integer
+ *                   example: 0
+ *                 take:
+ *                   type: integer
+ *                   example: 10
  */

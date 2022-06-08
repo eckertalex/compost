@@ -1,35 +1,29 @@
 import dotenv from 'dotenv'
 import path from 'path'
-import Joi from 'joi'
+import {z} from 'zod'
 
 dotenv.config({path: path.join(__dirname, '../../.env')})
 
-type EnvVars = {
-  NODE_ENV: 'production' | 'development' | 'test'
-  PORT: number
-  DATABASE_URL: string
+const envSchema = z.object({
+  NODE_ENV: z.enum(['production', 'development', 'test']),
+  PORT: z.string().min(1).default('3000'),
+  DATABASE_URL: z.string().min(1),
+})
+
+const result = envSchema.safeParse(process.env)
+
+if (!result.success) {
+  throw new Error(`Config validation error: ${result.error}`)
 }
 
-const envVarsSchema = Joi.object<EnvVars>()
-  .keys({
-    NODE_ENV: Joi.string()
-      .valid('production', 'development', 'test')
-      .required(),
-    PORT: Joi.number().default(3000),
-    DATABASE_URL: Joi.string().required(),
-  })
-  .unknown()
-
-const {value: envVars, error} = envVarsSchema
-  .prefs({errors: {label: 'key'}})
-  .validate(process.env)
-
-if (error) {
-  throw new Error(`Config validation error: ${error.message}`)
+type Config = {
+  env: 'production' | 'development' | 'test'
+  port: string
+  databaseUrl: string
 }
 
-export const config = {
-  env: envVars.NODE_ENV,
-  port: envVars.PORT,
-  databaseUrl: envVars.DATABASE_URL,
+export const config: Config = {
+  env: result.data.NODE_ENV,
+  port: result.data.PORT,
+  databaseUrl: result.data.DATABASE_URL,
 }

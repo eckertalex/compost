@@ -1,10 +1,17 @@
 import {Prisma} from '@prisma/client'
 import {ErrorRequestHandler, NextFunction, Request, Response} from 'express'
 import httpStatus from 'http-status'
+import {config} from '../config/config'
 import {ApiError} from '../utils/api-error'
 
 function cleanUpError(error: Prisma.PrismaClientKnownRequestError): string {
   return error.message.replace(/\n/g, '')
+}
+
+function getErrorMessage(error: Prisma.PrismaClientKnownRequestError): string {
+  return config.env === 'production'
+    ? error.code
+    : `${error.code}: ${cleanUpError(error)}`
 }
 
 export const prismaClientErrorFilter: ErrorRequestHandler = (
@@ -20,7 +27,7 @@ export const prismaClientErrorFilter: ErrorRequestHandler = (
       // catch value too long
       error = new ApiError(
         httpStatus.BAD_REQUEST,
-        cleanUpError(error),
+        getErrorMessage(error),
         true,
         error.stack
       )
@@ -28,7 +35,7 @@ export const prismaClientErrorFilter: ErrorRequestHandler = (
       // catch unique constraint
       error = new ApiError(
         httpStatus.CONFLICT,
-        cleanUpError(error),
+        getErrorMessage(error),
         true,
         error.stack
       )
@@ -36,7 +43,7 @@ export const prismaClientErrorFilter: ErrorRequestHandler = (
       // catch not found
       error = new ApiError(
         httpStatus.NOT_FOUND,
-        cleanUpError(error),
+        getErrorMessage(error),
         true,
         error.stack
       )
